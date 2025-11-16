@@ -92,7 +92,7 @@ export default function BotConfigPage({
       {/* Header with Action Buttons */}
       <BotConfigHeader
         botName={botData.name}
-        onTest={handleTest}
+        botId={id}
         onPublish={handlePublish}
         isPublishing={isPublishing}
       />

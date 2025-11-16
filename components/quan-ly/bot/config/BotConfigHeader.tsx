@@ -1,20 +1,27 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { Play, Rocket } from "lucide-react";
 
 interface BotConfigHeaderProps {
   botName: string;
-  onTest?: () => void;
+  botId: string;
   onPublish?: () => void;
   isPublishing?: boolean;
 }
 
 export function BotConfigHeader({
   botName,
-  onTest,
+  botId,
   onPublish,
   isPublishing = false,
 }: BotConfigHeaderProps) {
+  const router = useRouter();
+
+  const handleTest = () => {
+    router.push(`/bot/preview/${botId}`);
+  };
+
   return (
     <div className="mb-8 flex items-center justify-between">
       <div>
@@ -27,7 +34,7 @@ export function BotConfigHeader({
       {/* Action Buttons */}
       <div className="flex gap-3">
         <button
-          onClick={onTest}
+          onClick={handleTest}
           className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 font-semibold text-slate-700 transition-all hover:border-slate-400 hover:bg-slate-50 hover:shadow-md"
         >
           <Play className="h-4 w-4" />

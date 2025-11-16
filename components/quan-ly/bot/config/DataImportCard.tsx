@@ -133,7 +133,7 @@ export function DataImportCard() {
                 Tải tài liệu từ máy tính, chọn, hoặc kéo thả
               </p>
               <p className="mt-1 text-sm text-slate-600">
-                Cho phép các định dạng file: .xls, .xlsx
+                Cho phép các định dạng file: .pdf .docx .xls, .xlsx
               </p>
               <label className="mt-4 inline-block">
                 <input
@@ -152,7 +152,7 @@ export function DataImportCard() {
             {/* File Info */}
             <div className="mb-6 rounded-lg border border-slate-200 bg-slate-50 p-4">
               <p className="text-sm text-slate-900">
-                Các định dạng tệp được chấp nhận bao gồm .xls, .xlsx. Tệp chứa
+                Các định dạng tệp được chấp nhận bao gồm .pdf .docx .xls, .xlsx. Tệp chứa
                 tối đa 1000 dòng dữ liệu và không vượt quá 100MB
               </p>
               <a href="#" className="mt-2 inline-block text-sm font-medium text-red-600 hover:text-red-700">
