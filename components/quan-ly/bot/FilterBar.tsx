@@ -3,41 +3,41 @@
 import { useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 
+type BotStatus = "running" | "testing";
+
 interface FilterBarProps {
   onSearchChange: (value: string) => void;
-  onSortChange?: (sort: "newest" | "oldest") => void;
-  onCategoryChange?: (category: "comments" | "messages") => void;
+  onStatusChange?: (status: BotStatus | null) => void;
 }
 
 export function FilterBar({
   onSearchChange,
-  onSortChange,
-  onCategoryChange,
+  onStatusChange,
 }: FilterBarProps) {
   const [sortOpen, setSortOpen] = useState(false);
-  const [categoryOpen, setCategoryOpen] = useState(false);
+  const [statusOpen, setStatusOpen] = useState(false);
   const [selectedSort, setSelectedSort] = useState<"newest" | "oldest">(
     "newest"
   );
-  const [selectedCategory, setSelectedCategory] = useState<
-    "comments" | "messages"
-  >("comments");
+  const [selectedStatus, setSelectedStatus] = useState<BotStatus | null>(null);
 
   const handleSortChange = (sort: "newest" | "oldest") => {
     setSelectedSort(sort);
     setSortOpen(false);
-    onSortChange?.(sort);
   };
 
-  const handleCategoryChange = (category: "comments" | "messages") => {
-    setSelectedCategory(category);
-    setCategoryOpen(false);
-    onCategoryChange?.(category);
+  const handleStatusChange = (status: BotStatus | null) => {
+    setSelectedStatus(status);
+    setStatusOpen(false);
+    onStatusChange?.(status);
   };
 
   const sortLabel = selectedSort === "newest" ? "Mới nhất" : "Cũ nhất";
-  const categoryLabel =
-    selectedCategory === "comments" ? "Trả lời bình luận" : "Trả lời tin nhắn";
+  const statusLabel = selectedStatus
+    ? selectedStatus === "running"
+      ? "Đang chạy"
+      : "Thử nghiệm"
+    : "Tất cả trạng thái";
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-red-200 bg-white px-4 py-3 shadow-sm shadow-red-100 font-sans md:flex-row md:items-center md:justify-between">
@@ -92,39 +92,50 @@ export function FilterBar({
           )}
         </div>
 
-        {/* Category Dropdown */}
+        {/* Status Filter Dropdown */}
         <div className="relative">
           <button
             type="button"
-            onClick={() => setCategoryOpen(!categoryOpen)}
+            onClick={() => setStatusOpen(!statusOpen)}
             className="inline-flex items-center gap-2 rounded-lg border border-red-200 bg-red-50 px-3 py-1.5 text-xs font-medium text-red-700 transition-colors hover:border-red-300 hover:bg-red-100"
           >
-            <span>{categoryLabel}</span>
+            <span>{statusLabel}</span>
             <ChevronDown className="h-3.5 w-3.5" />
           </button>
-          {categoryOpen && (
+          {statusOpen && (
             <div className="absolute right-0 top-full z-10 mt-1 w-48 rounded-lg border border-red-200 bg-white shadow-lg">
               <button
                 type="button"
-                onClick={() => handleCategoryChange("comments")}
+                onClick={() => handleStatusChange(null)}
                 className={`block w-full px-3 py-2 text-left text-xs transition-colors ${
-                  selectedCategory === "comments"
+                  selectedStatus === null
                     ? "bg-red-100 text-red-700"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                Trả lời bình luận
+                Tất cả trạng thái
               </button>
               <button
                 type="button"
-                onClick={() => handleCategoryChange("messages")}
+                onClick={() => handleStatusChange("running")}
                 className={`block w-full px-3 py-2 text-left text-xs transition-colors ${
-                  selectedCategory === "messages"
+                  selectedStatus === "running"
                     ? "bg-red-100 text-red-700"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                Trả lời tin nhắn
+                Đang chạy
+              </button>
+              <button
+                type="button"
+                onClick={() => handleStatusChange("testing")}
+                className={`block w-full px-3 py-2 text-left text-xs transition-colors ${
+                  selectedStatus === "testing"
+                    ? "bg-red-100 text-red-700"
+                    : "text-slate-700 hover:bg-slate-100"
+                }`}
+              >
+                Thử nghiệm
               </button>
             </div>
           )}

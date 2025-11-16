@@ -11,18 +11,13 @@ const statusConfig: Record<
   ChatbotStatus,
   { label: string; color: string; dot: string }
 > = {
-  active: {
+  running: {
     label: "Đang chạy",
     color: "bg-emerald-100 text-emerald-700 border-emerald-300",
     dot: "bg-emerald-600",
   },
-  inactive: {
-    label: "Tạm dừng",
-    color: "bg-slate-200 text-slate-700 border-slate-300",
-    dot: "bg-slate-600",
-  },
-  draft: {
-    label: "Bản nháp",
+  testing: {
+    label: "Thử nghiệm",
     color: "bg-amber-100 text-amber-700 border-amber-300",
     dot: "bg-amber-600",
   },

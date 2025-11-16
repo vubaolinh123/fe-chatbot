@@ -31,6 +31,8 @@ const LLMSelectionCard = dynamic(
   { loading: () => <div className="h-24 animate-pulse rounded-xl bg-slate-200" /> }
 );
 
+type BotStatus = "running" | "testing";
+
 interface BotConfig {
   id: string;
   name: string;
@@ -39,6 +41,7 @@ interface BotConfig {
   goal: string;
   firstMessage: string;
   selectedLLM: string;
+  status: BotStatus;
 }
 
 // Mock bot data - in production, this would come from the database
@@ -51,6 +54,7 @@ const getMockBotData = (id: string): BotConfig => {
     goal: "Thu thập thông tin liên hệ từ khách hàng",
     firstMessage: "Xin chào! Tôi có thể giúp bạn điều gì?",
     selectedLLM: "gemini",
+    status: "testing",
   };
 };
 
@@ -64,27 +68,25 @@ export default function BotConfigPage({
 
   const [firstMessage, setFirstMessage] = useState(botData.firstMessage);
   const [selectedLLM, setSelectedLLM] = useState(botData.selectedLLM);
+  const [botStatus, setBotStatus] = useState<BotStatus>(botData.status);
   const [isPublishing, setIsPublishing] = useState(false);
 
   const handlePublish = async () => {
     setIsPublishing(true);
     try {
-      // TODO: Implement actual publish logic
-      console.log("Publishing bot:", {
-        id,
-        firstMessage,
-        selectedLLM,
-      });
       // Simulate API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+
+      // Toggle status between testing and running
+      setBotStatus((prev) => (prev === "testing" ? "running" : "testing"));
+
+      console.log("Bot status toggled:", {
+        id,
+        newStatus: botStatus === "testing" ? "running" : "testing",
+      });
     } finally {
       setIsPublishing(false);
     }
-  };
-
-  const handleTest = () => {
-    // TODO: Implement test bot logic
-    console.log("Testing bot:", id);
   };
 
   return (
@@ -93,6 +95,7 @@ export default function BotConfigPage({
       <BotConfigHeader
         botName={botData.name}
         botId={id}
+        botStatus={botStatus}
         onPublish={handlePublish}
         isPublishing={isPublishing}
       />

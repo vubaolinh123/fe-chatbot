@@ -272,7 +272,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Content */}
         <main className="flex-1 bg-slate-50">
-          <div className="w-full px-4 py-6 lg:px-6 lg:py-8">
+          <div className="w-full">
             {children}
           </div>
         </main>

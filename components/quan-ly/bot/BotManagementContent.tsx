@@ -1,17 +1,20 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
 import { MessageCircleMore } from "lucide-react";
 import { ChatbotList, type Chatbot } from "./ChatbotList";
 import { FilterBar } from "./FilterBar";
 import { CreateBotButton } from "./CreateBotButton";
+
+type BotStatus = "running" | "testing";
 
 const MOCK_CHATBOTS: Chatbot[] = [
   {
     id: "1",
     name: "Chatbot CSKH Website",
     type: "CSKH",
-    status: "active",
+    status: "running",
     channel: "Website",
     trainingProgress: 92,
     lastUpdated: "Hôm qua",
@@ -20,7 +23,7 @@ const MOCK_CHATBOTS: Chatbot[] = [
     id: "2",
     name: "Trợ lý tư vấn hỗ trợ khách hàng",
     type: "Tư vấn",
-    status: "active",
+    status: "running",
     channel: "Messenger",
     trainingProgress: 84,
     lastUpdated: "2 giờ trước",
@@ -29,7 +32,7 @@ const MOCK_CHATBOTS: Chatbot[] = [
     id: "3",
     name: "FAQ sản phẩm mới",
     type: "FAQ",
-    status: "draft",
+    status: "testing",
     channel: "Zalo",
     trainingProgress: 56,
     lastUpdated: "Hôm nay",
@@ -38,7 +41,7 @@ const MOCK_CHATBOTS: Chatbot[] = [
     id: "4",
     name: "Chatbot nhân sự và tuyển dụng",
     type: "CSKH",
-    status: "inactive",
+    status: "testing",
     channel: "Facebook",
     trainingProgress: 100,
     lastUpdated: "1 tuần trước",
@@ -46,9 +49,11 @@ const MOCK_CHATBOTS: Chatbot[] = [
 ];
 
 export function BotManagementContent() {
+  const router = useRouter();
   const [chatbots, setChatbots] = useState<Chatbot[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState("");
+  const [statusFilter, setStatusFilter] = useState<BotStatus | null>(null);
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -63,26 +68,30 @@ export function BotManagementContent() {
     if (isLoading) return [];
 
     return chatbots.filter((bot) => {
+      // Filter by search query
       const normalizedQuery = searchQuery.trim().toLowerCase();
-      if (!normalizedQuery) return true;
+      if (normalizedQuery) {
+        const haystack = `${bot.name} ${bot.type} ${bot.channel}`.toLowerCase();
+        if (!haystack.includes(normalizedQuery)) return false;
+      }
 
-      const haystack = `${bot.name} ${bot.type} ${bot.channel}`.toLowerCase();
+      // Filter by status
+      if (statusFilter && bot.status !== statusFilter) return false;
 
-      return haystack.includes(normalizedQuery);
+      return true;
     });
-  }, [chatbots, isLoading, searchQuery]);
+  }, [chatbots, isLoading, searchQuery, statusFilter]);
 
   const handleEdit = (id: string) => {
-    // TODO: Điều hướng sang màn hình sửa đổi thông tin bot
-    console.log("Edit chatbot", id);
+    router.push(`/quan-ly/bot/${id}`);
   };
 
   const handleDelete = (id: string) => {
     setChatbots((prev) => prev.filter((bot) => bot.id !== id));
   };
 
-  const activeCount = chatbots.filter((bot) => bot.status === "active").length;
-  const draftCount = chatbots.filter((bot) => bot.status === "draft").length;
+  const activeCount = chatbots.filter((bot) => bot.status === "running").length;
+  const draftCount = chatbots.filter((bot) => bot.status === "testing").length;
 
   return (
     <section className="space-y-5">
@@ -111,7 +120,7 @@ export function BotManagementContent() {
               </div>
               <div className="flex flex-col rounded-2xl border border-red-200 bg-red-50 px-3 py-2">
                 <span className="text-[10px] text-red-600">
-                  Bản nháp / thử nghiệm
+                  Thử nghiệm
                 </span>
                 <span className="text-sm font-semibold text-red-700">
                   {draftCount}
@@ -125,6 +134,7 @@ export function BotManagementContent() {
         <div className="relative mt-5 space-y-3">
           <FilterBar
             onSearchChange={setSearchQuery}
+            onStatusChange={setStatusFilter}
           />
           <ChatbotList
             chatbots={filteredChatbots}
