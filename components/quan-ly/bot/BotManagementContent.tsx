@@ -86,34 +86,34 @@ export function BotManagementContent() {
 
   return (
     <section className="space-y-5">
-      <div className="relative overflow-hidden rounded-3xl border border-red-500/30 bg-slate-950 p-5 shadow-lg shadow-red-500/10 sm:p-6">
+      <div className="relative overflow-hidden rounded-3xl border border-red-200 bg-white p-5 shadow-lg shadow-red-100 sm:p-6">
         <div className="relative flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
           <div className="flex items-start gap-3">
-            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-red-500 text-white shadow-lg shadow-red-500/50">
+            <div className="flex h-9 w-9 items-center justify-center rounded-2xl bg-red-600 text-white shadow-lg shadow-red-600/50">
               <MessageCircleMore className="h-5 w-5" />
             </div>
             <div className="space-y-1">
-              <p className="text-xs font-medium uppercase tracking-[0.18em] text-red-300">
+              <p className="text-xs font-medium uppercase tracking-[0.18em] text-red-600">
                 Quản lý chatbot
               </p>
-              <h1 className="text-base font-semibold text-slate-50 sm:text-lg">
+              <h1 className="text-base font-semibold text-slate-900 sm:text-lg">
                 Tạo và huấn luyện chatbot theo định lực của bạn
               </h1>
             </div>
           </div>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-            <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-300 sm:w-60">
-              <div className="flex flex-col rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-2">
-                <span className="text-[10px] text-red-300">Chatbot đang chạy</span>
-                <span className="text-sm font-semibold text-red-200">
+            <div className="grid grid-cols-2 gap-2 text-[11px] text-slate-700 sm:w-60">
+              <div className="flex flex-col rounded-2xl border border-red-200 bg-red-50 px-3 py-2">
+                <span className="text-[10px] text-red-600">Chatbot đang chạy</span>
+                <span className="text-sm font-semibold text-red-700">
                   {activeCount}
                 </span>
               </div>
-              <div className="flex flex-col rounded-2xl border border-red-500/30 bg-red-500/10 px-3 py-2">
-                <span className="text-[10px] text-red-300">
+              <div className="flex flex-col rounded-2xl border border-red-200 bg-red-50 px-3 py-2">
+                <span className="text-[10px] text-red-600">
                   Bản nháp / thử nghiệm
                 </span>
-                <span className="text-sm font-semibold text-red-200">
+                <span className="text-sm font-semibold text-red-700">
                   {draftCount}
                 </span>
               </div>

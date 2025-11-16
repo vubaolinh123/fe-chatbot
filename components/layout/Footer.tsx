@@ -97,7 +97,7 @@ export function Footer() {
         <div className="border-t border-gray-700/50 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-gray-500 text-sm">
-              © 2024 ASI Everest. Tất cả quyền được bảo lưu.
+              © 2025 ASI Everest. Tất cả quyền được bảo lưu.
             </p>
             <div className="flex gap-6">
               <a href="#" className="text-gray-400 hover:text-red-500 transition-colors text-sm">

@@ -68,13 +68,13 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-50 flex font-sans">
+    <div className="min-h-screen bg-white text-slate-900 flex font-sans">
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <button
           type="button"
           aria-label="Đóng menu điều hướng"
-          className="fixed inset-0 z-30 bg-black/40 backdrop-blur-sm lg:hidden"
+          className="fixed inset-0 z-30 bg-black/20 backdrop-blur-sm lg:hidden"
           onClick={() => setSidebarOpen(false)}
         />
       )}
@@ -143,7 +143,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
                   } ${
                     active
                       ? "border-red-500/60 bg-red-500/15 text-slate-50"
-                      : "border-transparent bg-slate-900/40 text-slate-400 hover:border-red-500/40 hover:bg-slate-900/80 hover:text-slate-50"
+                      : "border-slate-900/40 bg-slate-900/40 text-slate-400 hover:border-red-500/40 hover:bg-slate-900/80 hover:text-slate-50"
                   }`}
                 >
                   <div className={`flex items-center ${sidebarCollapsed ? "" : "gap-3"}`}>
@@ -271,7 +271,7 @@ export function DashboardLayout({ children }: DashboardLayoutProps) {
         </header>
 
         {/* Content */}
-        <main className="flex-1 bg-slate-950">
+        <main className="flex-1 bg-slate-50">
           <div className="w-full px-4 py-6 lg:px-6 lg:py-8">
             {children}
           </div>
