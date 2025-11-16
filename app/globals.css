@@ -43,12 +43,12 @@
   --color-primary-red-light: var(--primary-red-light);
   --color-accent-orange: var(--accent-orange);
   --color-accent-pink: var(--accent-pink);
-  --font-sans: "Cakelan", sans-serif;
-  --font-mono: "Cakelan", monospace;
+  --font-sans: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
 }
 
-* {
-  font-family: "Cakelan", sans-serif;
+.font-cakelan {
+  font-family: "Cakelan", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 html {
@@ -58,6 +58,6 @@ html {
 body {
   background: var(--background);
   color: var(--text-primary);
-  font-family: "Cakelan", sans-serif;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   overflow-x: hidden;
 }

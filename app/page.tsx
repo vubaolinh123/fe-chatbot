@@ -24,7 +24,7 @@ const Footer = dynamic(() => import("@/components/layout/Footer").then(mod => ({
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-black text-white">
+    <main className="min-h-screen bg-black text-white font-cakelan">
       <Header />
       <Hero />
       <Features />
