@@ -89,8 +89,9 @@ export default function BotPreviewPage({
     setMessages((prev) => [...prev, userMessage]);
     setInputValue("");
     setIsLoading(true);
+    setIsTyping(true); // Show typing indicator immediately
 
-    // Simulate bot thinking
+    // Simulate bot thinking (1 second delay)
     setTimeout(() => {
       const botResponse = generateMockResponse(inputValue);
       const botMessage: Message = {
@@ -99,12 +100,14 @@ export default function BotPreviewPage({
         content: botResponse,
       };
 
-      setIsTyping(true);
+      // Hide typing indicator BEFORE adding the message
+      setIsTyping(false);
+
+      // Add bot message with typing effect
       setMessages((prev) => [...prev, botMessage]);
 
-      // Stop typing after typewriter effect completes
+      // Stop loading after typewriter effect completes
       setTimeout(() => {
-        setIsTyping(false);
         setIsLoading(false);
       }, botResponse.length * 30 + 500);
     }, 1000);
@@ -167,11 +170,11 @@ export default function BotPreviewPage({
                 role={message.role}
                 content={message.content}
                 botName={botData.name}
-                isTyping={isTyping && message.role === "bot" && message === messages[messages.length - 1]}
+                isTyping={message.role === "bot" && message === messages[messages.length - 1]}
               />
             </div>
           ))}
-          {isTyping && messages[messages.length - 1]?.role === "bot" && (
+          {isTyping && messages[messages.length - 1]?.role !== "bot" && (
             <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
               <TypingIndicator botName={botData.name} />
             </div>
