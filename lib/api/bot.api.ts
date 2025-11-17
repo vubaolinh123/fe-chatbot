@@ -8,6 +8,7 @@ export interface BotData {
   createdAt: number;
   updatedAt: number;
   firstMessage: string;
+  uid: string;
   field?: string;
   target?: string;
   mainTarget?: string;
@@ -180,6 +181,44 @@ export async function updateBot(data: UpdateBotRequest): Promise<UpdateBotRespon
     throw error;
   }
 }
+
+/**
+ * Interface for delete bot request
+ */
+export interface DeleteBotRequest {
+  uid: string;
+}
+
+export interface DeleteBotResponse {
+  error: number;
+  message?: string;
+}
+
+/**
+ * Delete a bot by UID
+ * @param uid - Bot UID
+ * @returns Promise with delete result
+ */
+export async function deleteBot(uid: string): Promise<DeleteBotResponse> {
+  try {
+    const payload: DeleteBotRequest = { uid };
+
+    const response: DeleteBotResponse = await axiosInstance.post(
+      "/webhook/api/v1/demo/remove-bot",
+      payload
+    );
+
+    if (response.error !== 0) {
+      throw new Error(response.message || `API returned error: ${response.error}`);
+    }
+
+    return response;
+  } catch (error) {
+    console.error("Failed to delete bot:", error);
+    throw error;
+  }
+}
+
 
 /**
  * Interface for message history request

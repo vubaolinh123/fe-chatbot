@@ -9,6 +9,7 @@ export type ChatbotStatus = "running" | "testing" | "ACTIVE" | "INACTIVE";
 export interface Chatbot {
   id: string;
   _id?: string; // API response uses _id
+  uid?: string; // Unique UID used for deletion and messaging
   name: string;
   type?: string; // Optional for API data
   status: ChatbotStatus;
