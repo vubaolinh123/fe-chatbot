@@ -154,8 +154,8 @@ export default function BotPreviewPage({
 
   if (isInitialLoading) {
     return (
-      <div className="flex h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="text-slate-600">Đang tải lịch sử chat...</div>
+      <div className="flex h-screen items-center justify-center bg-stone-50">
+        <div className="text-stone-600">Đang tải lịch sử chat...</div>
       </div>
     );
   }
@@ -164,12 +164,12 @@ export default function BotPreviewPage({
   const botInitial = botName.charAt(0).toUpperCase();
 
   return (
-    <div className="flex h-screen flex-col bg-gradient-to-br from-slate-50 to-slate-100">
+    <div className="flex h-screen flex-col bg-stone-50">
       {/* Fixed Header */}
-      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-rose-500 via-red-500 to-orange-400 px-6 py-4 shadow-lg">
+      <div className="fixed top-0 left-0 right-0 z-50 bg-gradient-to-r from-rose-500 via-red-500 to-orange-400 px-6 py-4 shadow-md">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md">
+            <div className="flex h-10 w-10 items-center justify-center rounded-full bg-stone-100 shadow-sm">
               <span className="text-sm font-bold text-red-600">
                 {botInitial}
               </span>
@@ -193,10 +193,10 @@ export default function BotPreviewPage({
       </div>
 
       {/* Messages Container - Scrollable with proper spacing */}
-      <div className="flex-1 overflow-y-auto px-6 py-6" style={{ marginTop: "72px", marginBottom: "120px" }}>
-        <div className="space-y-4">
+      <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6" style={{ marginTop: "72px", marginBottom: "120px" }}>
+        <div className="mx-auto max-w-2xl space-y-2.5">
           {messages.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-slate-500">
+            <div className="flex h-full items-center justify-center text-stone-500">
               <p>Chưa có lịch sử chat</p>
             </div>
           ) : (
@@ -227,44 +227,46 @@ export default function BotPreviewPage({
       </div>
 
       {/* Fixed Input Area */}
-      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white px-6 py-4 shadow-lg">
-        <div className="flex gap-3 items-end">
-          <textarea
-            value={inputValue}
-            onChange={(e) => setInputValue(e.target.value)}
-            onKeyPress={handleKeyPress}
-            placeholder="Nhập tin nhắn của bạn..."
-            disabled={isLoading}
-            className="flex-1 resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 outline-none transition-all focus:border-red-400 focus:ring-2 focus:ring-red-200 disabled:bg-slate-50"
-            rows={3}
-          />
+      <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-stone-200 bg-stone-50 px-4 py-4 sm:px-6 shadow-md">
+        <div className="mx-auto max-w-2xl">
+          <div className="flex gap-3 items-end rounded-2xl border border-stone-300 bg-stone-100 px-4 py-3 shadow-sm transition-all focus-within:border-red-400 focus-within:ring-2 focus-within:ring-red-200">
+            <textarea
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyPress={handleKeyPress}
+              placeholder="Nhập tin nhắn của bạn..."
+              disabled={isLoading}
+              className="flex-1 resize-none bg-transparent text-sm text-stone-800 placeholder:text-stone-400 outline-none disabled:bg-transparent"
+              rows={3}
+            />
 
-          {/* Upload Button */}
-          <button
-            disabled={isLoading}
-            className="group relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 shadow-sm transition-all hover:bg-slate-200 active:scale-95 disabled:bg-slate-100 disabled:text-slate-400"
-            aria-label="Đính kèm file"
-            title="Đính kèm file/ảnh"
-          >
-            <Paperclip className="h-5 w-5" />
-            <span className="absolute bottom-full mb-2 hidden whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1 text-xs text-white group-hover:block">
-              Đính kèm file/ảnh
-            </span>
-          </button>
+            {/* Upload Button */}
+            <button
+              disabled={isLoading}
+              className="group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg text-stone-600 transition-all hover:bg-stone-200 active:scale-95 disabled:text-stone-400"
+              aria-label="Đính kèm file"
+              title="Đính kèm file/ảnh"
+            >
+              <Paperclip className="h-5 w-5" />
+              <span className="absolute bottom-full mb-2 hidden whitespace-nowrap rounded-lg bg-stone-800 px-3 py-1 text-xs text-white group-hover:block">
+                Đính kèm file/ảnh
+              </span>
+            </button>
 
-          {/* Send Button */}
-          <button
-            onClick={handleSendMessage}
-            disabled={isLoading || !inputValue.trim()}
-            className="group relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md transition-all hover:shadow-lg hover:scale-105 active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
-            aria-label="Gửi tin nhắn"
-            title="Gửi tin nhắn"
-          >
-            <Send className="h-5 w-5" />
-            <span className="absolute bottom-full mb-2 hidden whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1 text-xs text-white group-hover:block">
-              Gửi tin nhắn
-            </span>
-          </button>
+            {/* Send Button */}
+            <button
+              onClick={handleSendMessage}
+              disabled={isLoading || !inputValue.trim()}
+              className="group relative flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-gradient-to-br from-red-600 to-red-700 text-white transition-all hover:shadow-md active:scale-95 disabled:bg-stone-300"
+              aria-label="Gửi tin nhắn"
+              title="Gửi tin nhắn"
+            >
+              <Send className="h-5 w-5" />
+              <span className="absolute bottom-full mb-2 hidden whitespace-nowrap rounded-lg bg-stone-800 px-3 py-1 text-xs text-white group-hover:block">
+                Gửi tin nhắn
+              </span>
+            </button>
+          </div>
         </div>
       </div>
     </div>
