@@ -3,6 +3,7 @@
 import { useI18n } from "@/lib/i18n/context";
 import { motion, Variants } from "framer-motion";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 
 export function Hero() {
   const { t } = useI18n();
@@ -67,7 +68,9 @@ export function Hero() {
             <button className="group relative px-8 py-4 bg-gradient-to-r from-red-600 to-red-700 text-white font-bold rounded-lg overflow-hidden transition-all hover:shadow-lg hover:shadow-red-600/50 hover:scale-105">
               <div className="absolute inset-0 bg-gradient-to-r from-red-500 to-red-600 opacity-0 group-hover:opacity-100 transition-opacity" />
               <div className="relative flex items-center gap-2">
-                {t.hero.cta}
+                <Link href={"/quan-ly/bot"}>
+                  {t.hero.cta}
+                </Link>
                 <ArrowRight size={20} className="group-hover:translate-x-1 transition-transform" />
               </div>
             </button>
