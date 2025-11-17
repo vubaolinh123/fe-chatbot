@@ -1,18 +1,25 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Upload, X, File, Trash2 } from "lucide-react";
+import { Upload, X, File, Trash2, AlertCircle, CheckCircle } from "lucide-react";
 
 interface UploadedFile {
   id: string;
   name: string;
   size: number;
+  file?: File;
 }
+
+const ALLOWED_EXTENSIONS = [".pdf", ".docx", ".xls", ".xlsx"];
+const WEBHOOK_URL = "https://contentta.cloud/webhook/upload-file";
 
 export function DataImportCard() {
   const [isOpen, setIsOpen] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState<UploadedFile[]>([]);
   const [isDragging, setIsDragging] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+  const [uploadStatus, setUploadStatus] = useState<"idle" | "success" | "error">("idle");
+  const [uploadMessage, setUploadMessage] = useState("");
 
   useEffect(() => {
     if (isOpen) {
@@ -47,18 +54,42 @@ export function DataImportCard() {
     handleFiles(files);
   };
 
+  const validateFileExtension = (fileName: string): boolean => {
+    const fileExtension = fileName.substring(fileName.lastIndexOf(".")).toLowerCase();
+    return ALLOWED_EXTENSIONS.includes(fileExtension);
+  };
+
   const handleFileInput = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
     handleFiles(files);
   };
 
   const handleFiles = (files: File[]) => {
-    const newFiles = files.map((file) => ({
-      id: Math.random().toString(36).substr(2, 9),
-      name: file.name,
-      size: file.size,
-    }));
-    setUploadedFiles([...uploadedFiles, ...newFiles]);
+    const validFiles: UploadedFile[] = [];
+    const invalidFiles: string[] = [];
+
+    files.forEach((file) => {
+      if (validateFileExtension(file.name)) {
+        validFiles.push({
+          id: Math.random().toString(36).substring(2, 11),
+          name: file.name,
+          size: file.size,
+          file: file,
+        });
+      } else {
+        invalidFiles.push(file.name);
+      }
+    });
+
+    if (invalidFiles.length > 0) {
+      setUploadStatus("error");
+      setUploadMessage(
+        `Invalid file format(s): ${invalidFiles.join(", ")}. Only .pdf, .docx, .xls, .xlsx are allowed.`
+      );
+      setTimeout(() => setUploadStatus("idle"), 5000);
+    }
+
+    setUploadedFiles([...uploadedFiles, ...validFiles]);
   };
 
   const removeFile = (id: string) => {
@@ -71,6 +102,108 @@ export function DataImportCard() {
     const sizes = ["Bytes", "KB", "MB"];
     const i = Math.floor(Math.log(bytes) / Math.log(k));
     return Math.round((bytes / Math.pow(k, i)) * 100) / 100 + " " + sizes[i];
+  };
+
+  const uploadFilesToWebhook = async () => {
+    if (uploadedFiles.length === 0) {
+      setUploadStatus("error");
+      setUploadMessage("Please select at least one file to upload.");
+      setTimeout(() => setUploadStatus("idle"), 5000);
+      return;
+    }
+
+    setIsUploading(true);
+    setUploadStatus("idle");
+    setUploadMessage("");
+
+    try {
+      // Upload each file to the webhook
+      const uploadPromises = uploadedFiles.map(async (uploadedFile) => {
+        if (!uploadedFile.file) return;
+
+        const formData = new FormData();
+        formData.append("file", uploadedFile.file);
+
+        try {
+          const response = await fetch(WEBHOOK_URL, {
+            method: "POST",
+            body: formData,
+          });
+
+          if (!response.ok) {
+            throw new Error(
+              `HTTP ${response.status}: ${response.statusText}`
+            );
+          }
+
+          const data = await response.json();
+          console.log(`✅ File uploaded successfully: ${uploadedFile.name}`, {
+            fileName: uploadedFile.name,
+            fileSize: uploadedFile.size,
+            response: data,
+          });
+
+          return { success: true, fileName: uploadedFile.name };
+        } catch (error) {
+          const errorMessage =
+            error instanceof Error ? error.message : "Unknown error";
+          console.error(
+            `❌ Failed to upload file: ${uploadedFile.name}`,
+            {
+              fileName: uploadedFile.name,
+              fileSize: uploadedFile.size,
+              error: errorMessage,
+              fullError: error,
+            }
+          );
+
+          return { success: false, fileName: uploadedFile.name };
+        }
+      });
+
+      const results = await Promise.all(uploadPromises);
+      const successCount = results.filter((r) => r?.success).length;
+      const failureCount = results.filter((r) => !r?.success).length;
+
+      if (failureCount === 0) {
+        setUploadStatus("success");
+        setUploadMessage(
+          `✅ All ${successCount} file(s) uploaded successfully!`
+        );
+        console.log("✅ All files uploaded successfully", {
+          totalFiles: uploadedFiles.length,
+          successCount,
+        });
+        // Clear files after successful upload
+        setTimeout(() => {
+          setUploadedFiles([]);
+          setUploadStatus("idle");
+          setIsOpen(false);
+        }, 2000);
+      } else {
+        setUploadStatus("error");
+        setUploadMessage(
+          `⚠️ ${successCount} file(s) uploaded, ${failureCount} file(s) failed.`
+        );
+        console.warn("⚠️ Some files failed to upload", {
+          totalFiles: uploadedFiles.length,
+          successCount,
+          failureCount,
+        });
+      }
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Unknown error";
+      setUploadStatus("error");
+      setUploadMessage("Failed to upload files. Please try again.");
+      console.error("❌ Upload process failed", {
+        error: errorMessage,
+        fullError: error,
+        filesCount: uploadedFiles.length,
+      });
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
@@ -193,18 +326,39 @@ export function DataImportCard() {
               </div>
             )}
 
+            {/* Status Message */}
+            {uploadStatus !== "idle" && (
+              <div
+                className={`mb-6 flex items-center gap-3 rounded-lg p-4 ${
+                  uploadStatus === "success"
+                    ? "bg-emerald-50 text-emerald-700"
+                    : "bg-red-50 text-red-700"
+                }`}
+              >
+                {uploadStatus === "success" ? (
+                  <CheckCircle className="h-5 w-5 shrink-0" />
+                ) : (
+                  <AlertCircle className="h-5 w-5 shrink-0" />
+                )}
+                <p className="text-sm font-medium">{uploadMessage}</p>
+              </div>
+            )}
+
             {/* Footer */}
             <div className="flex gap-3 border-t border-slate-200 pt-6">
               <button
                 onClick={() => setIsOpen(false)}
-                className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700 transition-colors hover:bg-slate-50"
+                disabled={isUploading}
+                className="flex-1 rounded-lg border border-slate-300 bg-white px-4 py-2 font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Thoát
               </button>
               <button
-                className="flex-1 rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-red-700"
+                onClick={uploadFilesToWebhook}
+                disabled={isUploading || uploadedFiles.length === 0}
+                className="flex-1 rounded-lg bg-red-600 px-4 py-2 font-semibold text-white transition-colors hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
-                Nhập dữ liệu
+                {isUploading ? "Đang tải lên..." : "Nhập dữ liệu"}
               </button>
             </div>
           </div>
