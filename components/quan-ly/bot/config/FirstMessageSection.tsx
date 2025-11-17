@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import { MessageCircle } from "lucide-react";
 
 interface FirstMessageSectionProps {
@@ -12,11 +11,8 @@ export function FirstMessageSection({
   initialMessage = "",
   onMessageChange,
 }: FirstMessageSectionProps) {
-  const [message, setMessage] = useState(initialMessage);
-
   const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     const newMessage = e.target.value;
-    setMessage(newMessage);
     onMessageChange?.(newMessage);
   };
 
@@ -33,7 +29,7 @@ export function FirstMessageSection({
       </p>
       <textarea
         id="first-message"
-        value={message}
+        value={initialMessage}
         onChange={handleChange}
         placeholder="Nhập tin nhắn đầu tiên mà chatbot sẽ gửi..."
         className="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-red-400 focus:ring-2 focus:ring-red-200"

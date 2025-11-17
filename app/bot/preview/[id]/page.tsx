@@ -2,46 +2,53 @@
 
 import { useState, useEffect, useRef, use } from "react";
 import { useRouter } from "next/navigation";
-import { Send, X, Circle } from "lucide-react";
+import { Send, X, Circle, Paperclip } from "lucide-react";
 import { ChatMessage } from "@/components/quan-ly/bot/preview/ChatMessage";
 import { TypingIndicator } from "@/components/quan-ly/bot/preview/TypingIndicator";
+import { getMessageHistory, sendMessage, BotDetailData } from "@/lib/api/bot.api";
+import { showErrorToast } from "@/lib/toast-config";
 
 interface Message {
   id: string;
-  role: "user" | "bot";
+  role: "user" | "assistant";
   content: string;
 }
 
-interface BotConfig {
-  id: string;
-  name: string;
-  industry: string;
-  useCase: string;
-  goal: string;
-  firstMessage: string;
-  selectedLLM: string;
-}
-
-function getMockBotData(id: string): BotConfig {
-  return {
-    id,
-    name: "Chatbot Demo",
-    industry: "ecommerce",
-    useCase: "phone",
-    goal: "Thu thập thông tin liên hệ từ khách hàng",
-    firstMessage: "Xin chào! Tôi có thể giúp bạn điều gì?",
-    selectedLLM: "gemini",
+interface ParsedMessage {
+  type: "ai" | "human";
+  data: {
+    content: string;
+    [key: string]: any;
   };
 }
 
-function generateMockResponse(userMessage: string): string {
-  const responses = [
-    `Cảm ơn bạn đã nói: "${userMessage}". Tôi sẽ cố gắng giúp bạn tốt nhất có thể.`,
-    `Đó là một câu hỏi tuyệt vời! Liên quan đến "${userMessage}", tôi có thể cung cấp thêm thông tin.`,
-    `Tôi hiểu rồi. Bạn đang hỏi về "${userMessage}". Hãy cho tôi biết thêm chi tiết.`,
-    `Thú vị! Về "${userMessage}", tôi có một số gợi ý cho bạn.`,
-  ];
-  return responses[Math.floor(Math.random() * responses.length)];
+function generateId(): string {
+  return `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+}
+
+function parseMessageHistory(rawMessages: string[]): Message[] {
+  const messages: Message[] = [];
+
+  for (const jsonString of rawMessages) {
+    try {
+      const parsed: ParsedMessage = JSON.parse(jsonString);
+
+      if (!parsed.type || !parsed.data?.content) {
+        console.warn("Invalid message structure:", parsed);
+        continue;
+      }
+
+      messages.push({
+        id: generateId(),
+        role: parsed.type === "ai" ? "assistant" : "user",
+        content: parsed.data.content,
+      });
+    } catch (error) {
+      console.error("Failed to parse message:", jsonString, error);
+    }
+  }
+
+  return messages;
 }
 
 export default function BotPreviewPage({
@@ -51,24 +58,39 @@ export default function BotPreviewPage({
 }) {
   const { id } = use(params);
   const router = useRouter();
-  const [botData, setBotData] = useState<BotConfig | null>(null);
+  const [botData, setBotData] = useState<BotDetailData | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [isInitialLoading, setIsInitialLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Initialize bot data and first message
+  // Fetch message history on mount
   useEffect(() => {
-    const data = getMockBotData(id);
-    setBotData(data);
-    setMessages([
-      {
-        id: "1",
-        role: "bot",
-        content: data.firstMessage,
-      },
-    ]);
+    async function fetchMessageHistory() {
+      try {
+        setIsInitialLoading(true);
+        const response = await getMessageHistory(id);
+
+        if (response.error === 0 && response.data?.data) {
+          const parsedMessages = parseMessageHistory(response.data.data);
+          // Reverse to show oldest first
+          setMessages(parsedMessages.reverse());
+        } else {
+          console.warn("No message history found or API error");
+          setMessages([]);
+        }
+      } catch (error) {
+        console.error("Failed to fetch message history:", error);
+        showErrorToast("Không thể tải lịch sử chat");
+        setMessages([]);
+      } finally {
+        setIsInitialLoading(false);
+      }
+    }
+
+    fetchMessageHistory();
   }, [id]);
 
   // Auto-scroll to latest message
@@ -77,40 +99,50 @@ export default function BotPreviewPage({
   }, [messages, isTyping]);
 
   const handleSendMessage = async () => {
-    if (!inputValue.trim() || isLoading || !botData) return;
+    if (!inputValue.trim() || isLoading) return;
 
-    // Add user message
-    const userMessage: Message = {
-      id: Date.now().toString(),
+    const userMessageText = inputValue.trim();
+    const tempUserMessage: Message = {
+      id: generateId(),
       role: "user",
-      content: inputValue,
+      content: userMessageText,
     };
 
-    setMessages((prev) => [...prev, userMessage]);
+    // Optimistic update: Add user message to UI
+    setMessages((prev) => [...prev, tempUserMessage]);
     setInputValue("");
     setIsLoading(true);
-    setIsTyping(true); // Show typing indicator immediately
+    setIsTyping(true);
 
-    // Simulate bot thinking (1 second delay)
-    setTimeout(() => {
-      const botResponse = generateMockResponse(inputValue);
-      const botMessage: Message = {
-        id: (Date.now() + 1).toString(),
-        role: "bot",
-        content: botResponse,
-      };
+    try {
+      // Call send message API
+      const sendResponse = await sendMessage({
+        _id: id,
+        text: userMessageText,
+        kind: "text",
+        uid: "",
+      });
 
-      // Hide typing indicator BEFORE adding the message
+      if (sendResponse.error === 0) {
+        // Fetch updated message history
+        const historyResponse = await getMessageHistory(id);
+
+        if (historyResponse.error === 0 && historyResponse.data?.data) {
+          const parsedMessages = parseMessageHistory(historyResponse.data.data);
+          setMessages(parsedMessages.reverse());
+        }
+      } else {
+        throw new Error("API returned error");
+      }
+    } catch (error) {
+      console.error("Failed to send message:", error);
+      showErrorToast("Không thể gửi tin nhắn");
+      // Rollback: Remove the optimistic user message
+      setMessages((prev) => prev.filter((msg) => msg.id !== tempUserMessage.id));
+    } finally {
       setIsTyping(false);
-
-      // Add bot message with typing effect
-      setMessages((prev) => [...prev, botMessage]);
-
-      // Stop loading after typewriter effect completes
-      setTimeout(() => {
-        setIsLoading(false);
-      }, botResponse.length * 30 + 500);
-    }, 1000);
+      setIsLoading(false);
+    }
   };
 
   const handleKeyPress = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -120,13 +152,16 @@ export default function BotPreviewPage({
     }
   };
 
-  if (!botData) {
+  if (isInitialLoading) {
     return (
       <div className="flex h-screen items-center justify-center bg-gradient-to-br from-slate-50 to-slate-100">
-        <div className="text-slate-600">Đang tải...</div>
+        <div className="text-slate-600">Đang tải lịch sử chat...</div>
       </div>
     );
   }
+
+  const botName = botData?.name || "Chatbot";
+  const botInitial = botName.charAt(0).toUpperCase();
 
   return (
     <div className="flex h-screen flex-col bg-gradient-to-br from-slate-50 to-slate-100">
@@ -136,11 +171,11 @@ export default function BotPreviewPage({
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-md">
               <span className="text-sm font-bold text-red-600">
-                {botData.name.charAt(0).toUpperCase()}
+                {botInitial}
               </span>
             </div>
             <div>
-              <h1 className="font-semibold text-white">{botData.name}</h1>
+              <h1 className="font-semibold text-white">{botName}</h1>
               <div className="flex items-center gap-1">
                 <Circle className="h-2 w-2 fill-green-300 text-green-300" />
                 <p className="text-xs text-green-100">Trực tuyến</p>
@@ -160,24 +195,32 @@ export default function BotPreviewPage({
       {/* Messages Container - Scrollable with proper spacing */}
       <div className="flex-1 overflow-y-auto px-6 py-6" style={{ marginTop: "72px", marginBottom: "120px" }}>
         <div className="space-y-4">
-          {messages.map((message, index) => (
-            <div
-              key={message.id}
-              className="animate-in fade-in slide-in-from-bottom-2 duration-300"
-              style={{ animationDelay: `${index * 50}ms` }}
-            >
-              <ChatMessage
-                role={message.role}
-                content={message.content}
-                botName={botData.name}
-                isTyping={message.role === "bot" && message === messages[messages.length - 1]}
-              />
+          {messages.length === 0 ? (
+            <div className="flex h-full items-center justify-center text-slate-500">
+              <p>Chưa có lịch sử chat</p>
             </div>
-          ))}
-          {isTyping && messages[messages.length - 1]?.role !== "bot" && (
-            <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
-              <TypingIndicator botName={botData.name} />
-            </div>
+          ) : (
+            <>
+              {messages.map((message, index) => (
+                <div
+                  key={message.id}
+                  className="animate-in fade-in slide-in-from-bottom-2 duration-300"
+                  style={{ animationDelay: `${index * 50}ms` }}
+                >
+                  <ChatMessage
+                    role={message.role === "assistant" ? "bot" : "user"}
+                    content={message.content}
+                    botName={botName}
+                    isTyping={message.role === "assistant" && message === messages[messages.length - 1] && isTyping}
+                  />
+                </div>
+              ))}
+              {isTyping && messages[messages.length - 1]?.role !== "assistant" && (
+                <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                  <TypingIndicator botName={botName} />
+                </div>
+              )}
+            </>
           )}
           <div ref={messagesEndRef} />
         </div>
@@ -185,7 +228,7 @@ export default function BotPreviewPage({
 
       {/* Fixed Input Area */}
       <div className="fixed bottom-0 left-0 right-0 z-50 border-t border-slate-200 bg-white px-6 py-4 shadow-lg">
-        <div className="flex gap-3">
+        <div className="flex gap-3 items-end">
           <textarea
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
@@ -195,13 +238,32 @@ export default function BotPreviewPage({
             className="flex-1 resize-none rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 outline-none transition-all focus:border-red-400 focus:ring-2 focus:ring-red-200 disabled:bg-slate-50"
             rows={3}
           />
+
+          {/* Upload Button */}
+          <button
+            disabled={isLoading}
+            className="group relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-slate-100 text-slate-600 shadow-sm transition-all hover:bg-slate-200 active:scale-95 disabled:bg-slate-100 disabled:text-slate-400"
+            aria-label="Đính kèm file"
+            title="Đính kèm file/ảnh"
+          >
+            <Paperclip className="h-5 w-5" />
+            <span className="absolute bottom-full mb-2 hidden whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1 text-xs text-white group-hover:block">
+              Đính kèm file/ảnh
+            </span>
+          </button>
+
+          {/* Send Button */}
           <button
             onClick={handleSendMessage}
             disabled={isLoading || !inputValue.trim()}
-            className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md transition-all hover:shadow-lg hover:scale-105 active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
-            aria-label="Gửi"
+            className="group relative flex h-14 w-14 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-red-600 to-red-700 text-white shadow-md transition-all hover:shadow-lg hover:scale-105 active:scale-95 disabled:bg-slate-300 disabled:shadow-none"
+            aria-label="Gửi tin nhắn"
+            title="Gửi tin nhắn"
           >
             <Send className="h-5 w-5" />
+            <span className="absolute bottom-full mb-2 hidden whitespace-nowrap rounded-lg bg-slate-900 px-3 py-1 text-xs text-white group-hover:block">
+              Gửi tin nhắn
+            </span>
           </button>
         </div>
       </div>

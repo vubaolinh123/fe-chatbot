@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { Loader2 } from "lucide-react";
 import type { CreateBotFormData } from "@/app/quan-ly/bot/new/page";
 
 interface DetailsStepProps {
@@ -12,6 +13,7 @@ interface DetailsStepProps {
 interface FormErrors {
   name?: boolean;
   goal?: boolean;
+  firstMessage?: boolean;
 }
 
 export function DetailsStep({
@@ -31,6 +33,9 @@ export function DetailsStep({
     }
     if (!localFormData.goal.trim()) {
       newErrors.goal = true;
+    }
+    if (!localFormData.firstMessage.trim()) {
+      newErrors.firstMessage = true;
     }
 
     setErrors(newErrors);
@@ -119,6 +124,31 @@ export function DetailsStep({
           )}
         </div>
 
+        {/* First Message */}
+        <div>
+          <label htmlFor="firstMessage" className="block text-sm font-semibold text-slate-900">
+            Tin Nhắn Đầu Tiên <span className="text-red-600">*</span>
+          </label>
+          <textarea
+            id="firstMessage"
+            placeholder="Nhập tin nhắn chào mừng đầu tiên của chatbot..."
+            value={localFormData.firstMessage}
+            onChange={(e) => {
+              setLocalFormData({ ...localFormData, firstMessage: e.target.value });
+              if (errors.firstMessage) {
+                setErrors({ ...errors, firstMessage: false });
+              }
+            }}
+            className={`mt-2 w-full rounded-xl border bg-slate-50 px-4 py-3 text-sm text-slate-900 placeholder:text-slate-500 outline-none transition-colors focus:border-red-400 focus:ring-2 focus:ring-red-200 ${
+              errors.firstMessage ? "border-red-300" : "border-slate-200"
+            }`}
+            rows={3}
+          />
+          {errors.firstMessage && (
+            <p className="mt-1 text-xs text-red-600">Vui lòng nhập tin nhắn đầu tiên</p>
+          )}
+        </div>
+
         {/* Chat Only Toggle */}
         <div className="flex items-center gap-3 rounded-xl border border-slate-200 bg-slate-50 p-4">
           <button
@@ -150,16 +180,24 @@ export function DetailsStep({
         <button
           type="button"
           onClick={onBack}
-          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50"
+          disabled={isSubmitting}
+          className="inline-flex items-center gap-2 rounded-lg border border-slate-300 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-slate-400 hover:bg-slate-50 disabled:opacity-50 disabled:cursor-not-allowed"
         >
           Quay lại
         </button>
         <button
           type="submit"
           disabled={isSubmitting}
-          className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-600/30 transition-all hover:bg-red-700 hover:shadow-lg hover:shadow-red-700/40 disabled:opacity-50"
+          className="inline-flex items-center gap-2 rounded-lg bg-red-600 px-4 py-2.5 text-sm font-semibold text-white shadow-lg shadow-red-600/30 transition-all hover:bg-red-700 hover:shadow-lg hover:shadow-red-700/40 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-red-600 disabled:hover:shadow-lg disabled:hover:shadow-red-600/30"
         >
-          {isSubmitting ? "Đang tạo..." : "Tạo Chatbot"}
+          {isSubmitting ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Đang tạo...
+            </>
+          ) : (
+            "Tạo Chatbot"
+          )}
         </button>
       </div>
     </form>

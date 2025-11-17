@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { Search, ChevronDown } from "lucide-react";
 
-type BotStatus = "running" | "testing";
+type BotStatus = "running" | "testing" | "ACTIVE" | "INACTIVE";
 
 interface FilterBarProps {
   onSearchChange: (value: string) => void;
@@ -33,11 +33,19 @@ export function FilterBar({
   };
 
   const sortLabel = selectedSort === "newest" ? "Mới nhất" : "Cũ nhất";
-  const statusLabel = selectedStatus
-    ? selectedStatus === "running"
-      ? "Đang chạy"
-      : "Thử nghiệm"
-    : "Tất cả trạng thái";
+  const getStatusLabel = (status: BotStatus | null): string => {
+    switch (status) {
+      case "running":
+      case "ACTIVE":
+        return "Hoạt động";
+      case "testing":
+      case "INACTIVE":
+        return "Không hoạt động";
+      default:
+        return "Tất cả trạng thái";
+    }
+  };
+  const statusLabel = getStatusLabel(selectedStatus);
 
   return (
     <div className="flex flex-col gap-3 rounded-2xl border border-red-200 bg-white px-4 py-3 shadow-sm shadow-red-100 font-sans md:flex-row md:items-center md:justify-between">
@@ -117,25 +125,25 @@ export function FilterBar({
               </button>
               <button
                 type="button"
-                onClick={() => handleStatusChange("running")}
+                onClick={() => handleStatusChange("ACTIVE")}
                 className={`block w-full px-3 py-2 text-left text-xs transition-colors ${
-                  selectedStatus === "running"
+                  selectedStatus === "ACTIVE" || selectedStatus === "running"
                     ? "bg-red-100 text-red-700"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                Đang chạy
+                Hoạt động
               </button>
               <button
                 type="button"
-                onClick={() => handleStatusChange("testing")}
+                onClick={() => handleStatusChange("INACTIVE")}
                 className={`block w-full px-3 py-2 text-left text-xs transition-colors ${
-                  selectedStatus === "testing"
+                  selectedStatus === "INACTIVE" || selectedStatus === "testing"
                     ? "bg-red-100 text-red-700"
                     : "text-slate-700 hover:bg-slate-100"
                 }`}
               >
-                Thử nghiệm
+                Không hoạt động
               </button>
             </div>
           )}

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import { I18nProvider } from "@/lib/i18n/context";
+import { Toaster } from "react-hot-toast";
 
 export const metadata: Metadata = {
   title: "AI Chatbot - Tự động hóa hội thoại khách hàng",
@@ -18,6 +19,7 @@ export default function RootLayout({
         <I18nProvider>
           {children}
         </I18nProvider>
+        <Toaster />
       </body>
     </html>
   );

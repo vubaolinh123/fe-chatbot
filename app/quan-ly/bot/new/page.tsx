@@ -1,28 +1,34 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import { ChevronLeft } from "lucide-react";
 import { IndustryStep } from "@/components/quan-ly/bot/new/IndustryStep";
 import { UseCaseStep } from "@/components/quan-ly/bot/new/UseCaseStep";
 import { DetailsStep } from "@/components/quan-ly/bot/new/DetailsStep";
 import { ProgressIndicator } from "@/components/quan-ly/bot/new/ProgressIndicator";
+import { createBot } from "@/lib/api/bot.api";
+import { showSuccessToast, showErrorToast, showLoadingToast, updateToast } from "@/lib/toast-config";
 
 export interface CreateBotFormData {
   industry: string;
   useCase: string;
   name: string;
   goal: string;
+  firstMessage: string;
   website?: string;
   chatOnly: boolean;
 }
 
 export default function CreateBotPage() {
+  const router = useRouter();
   const [currentStep, setCurrentStep] = useState<1 | 2 | 3>(1);
   const [formData, setFormData] = useState<CreateBotFormData>({
     industry: "",
     useCase: "",
     name: "",
     goal: "",
+    firstMessage: "Xin chào! Tôi có thể giúp bạn điều gì?",
     website: "",
     chatOnly: false,
   });
@@ -45,11 +51,41 @@ export default function CreateBotPage() {
     }
   };
 
-  const handleSubmit = (data: CreateBotFormData) => {
-    console.log("Creating chatbot with data:", data);
-    // TODO: Implement actual chatbot creation logic
-    // For now, redirect to a placeholder bot details page
-    window.location.href = `/quan-ly/bot/new-bot-${Date.now()}`;
+  const handleSubmit = async (data: CreateBotFormData) => {
+    // Show loading toast
+    const loadingToastId = showLoadingToast("⏳ Đang tạo chatbot của bạn...");
+
+    try {
+      // Prepare data for API
+      const createBotData = {
+        name: data.name,
+        status: "INACTIVE" as const,
+        description: `${data.industry} - ${data.useCase}`,
+        field: data.industry,
+        target: data.useCase,
+        firstMessage: data.firstMessage,
+        mainTarget: data.goal,
+      };
+
+      // Call API to create bot
+      const response = await createBot(createBotData);
+
+      // Update loading toast to success
+      updateToast(loadingToastId, "✓ Tạo chatbot thành công! Đang chuyển hướng...", "success");
+
+      // Redirect to bot details page
+      const botId = response.data._id;
+      setTimeout(() => {
+        router.push(`/quan-ly/bot/${botId}`);
+      }, 1500);
+    } catch (error) {
+      const errorMessage =
+        error instanceof Error ? error.message : "Không thể tạo chatbot";
+
+      // Update loading toast to error
+      updateToast(loadingToastId, `✗ Không thể tạo chatbot: ${errorMessage}`, "error");
+      console.error("Error creating bot:", error);
+    }
   };
 
   return (
