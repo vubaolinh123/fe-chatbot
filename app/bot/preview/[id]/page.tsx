@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { Send, X, Circle, Paperclip } from "lucide-react";
 import { ChatMessage } from "@/components/quan-ly/bot/preview/ChatMessage";
 import { TypingIndicator } from "@/components/quan-ly/bot/preview/TypingIndicator";
-import { getMessageHistory, sendMessage, BotDetailData } from "@/lib/api/bot.api";
+import { getMessageHistory, sendMessage, getBotDetail, BotDetailData } from "@/lib/api/bot.api";
 import { showErrorToast } from "@/lib/toast-config";
 
 interface Message {
@@ -66,31 +66,60 @@ export default function BotPreviewPage({
   const [isInitialLoading, setIsInitialLoading] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Fetch message history on mount
+  // Fetch bot detail & message history on mount
   useEffect(() => {
-    async function fetchMessageHistory() {
-      try {
-        setIsInitialLoading(true);
-        const response = await getMessageHistory(id);
+    let isMounted = true;
 
-        if (response.error === 0 && response.data?.data) {
-          const parsedMessages = parseMessageHistory(response.data.data);
-          // Reverse to show oldest first
-          setMessages(parsedMessages.reverse());
+    async function fetchData() {
+      setIsInitialLoading(true);
+
+      try {
+        const [botDetailResult, historyResult] = await Promise.allSettled([
+          getBotDetail(id),
+          getMessageHistory(id),
+        ]);
+
+        if (!isMounted) return;
+
+        // Handle bot detail
+        if (botDetailResult.status === "fulfilled") {
+          const detailResponse = botDetailResult.value;
+          if (detailResponse.error === 0 && detailResponse.data) {
+            setBotData(detailResponse.data);
+          } else {
+            console.error("Failed to fetch bot detail or missing data", detailResponse);
+          }
         } else {
-          console.warn("No message history found or API error");
+          console.error("Failed to fetch bot detail:", botDetailResult.reason);
+        }
+
+        // Handle message history
+        if (historyResult.status === "fulfilled") {
+          const historyResponse = historyResult.value;
+          if (historyResponse.error === 0 && historyResponse.data?.data) {
+            const parsedMessages = parseMessageHistory(historyResponse.data.data);
+            setMessages(parsedMessages.reverse());
+          } else {
+            console.warn("No message history found or API error");
+            setMessages([]);
+          }
+        } else {
+          console.error("Failed to fetch message history:", historyResult.reason);
+          showErrorToast("Không thể tải lịch sử chat");
           setMessages([]);
         }
-      } catch (error) {
-        console.error("Failed to fetch message history:", error);
-        showErrorToast("Không thể tải lịch sử chat");
-        setMessages([]);
       } finally {
-        setIsInitialLoading(false);
+        if (isMounted) {
+          setIsInitialLoading(false);
+        }
       }
     }
 
-    fetchMessageHistory();
+    fetchData();
+
+    return () => {
+      isMounted = false;
+    };
   }, [id]);
 
   // Auto-scroll to latest message
@@ -196,9 +225,20 @@ export default function BotPreviewPage({
       <div className="flex-1 overflow-y-auto px-4 py-6 sm:px-6" style={{ marginTop: "72px", marginBottom: "120px" }}>
         <div className="mx-auto max-w-2xl space-y-2.5">
           {messages.length === 0 ? (
-            <div className="flex h-full items-center justify-center text-stone-500">
-              <p>Chưa có lịch sử chat</p>
-            </div>
+            botData?.firstMessage ? (
+              <div className="animate-in fade-in slide-in-from-bottom-2 duration-300">
+                <ChatMessage
+                  role="bot"
+                  content={botData.firstMessage}
+                  botName={botName}
+                  isTyping={false}
+                />
+              </div>
+            ) : (
+              <div className="flex h-full items-center justify-center text-stone-500">
+                <p>Chưa có lịch sử chat</p>
+              </div>
+            )
           ) : (
             <>
               {messages.map((message, index) => (
@@ -211,7 +251,11 @@ export default function BotPreviewPage({
                     role={message.role === "assistant" ? "bot" : "user"}
                     content={message.content}
                     botName={botName}
-                    isTyping={message.role === "assistant" && message === messages[messages.length - 1] && isTyping}
+                    isTyping={
+                      message.role === "assistant" &&
+                      message === messages[messages.length - 1] &&
+                      isTyping
+                    }
                   />
                 </div>
               ))}

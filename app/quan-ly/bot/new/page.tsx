@@ -51,7 +51,14 @@ export default function CreateBotPage() {
     }
   };
 
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
   const handleSubmit = async (data: CreateBotFormData) => {
+    // Prevent multiple submit calls
+    if (isSubmitting) return;
+
+    setIsSubmitting(true);
+
     // Show loading toast
     const loadingToastId = showLoadingToast("⏳ Đang tạo chatbot của bạn...");
 
@@ -71,7 +78,11 @@ export default function CreateBotPage() {
       const response = await createBot(createBotData);
 
       // Update loading toast to success
-      updateToast(loadingToastId, "✓ Tạo chatbot thành công! Đang chuyển hướng...", "success");
+      updateToast(
+        loadingToastId,
+        "✓ Tạo chatbot thành công! Đang chuyển hướng...",
+        "success"
+      );
 
       // Redirect to bot details page
       const botId = response.data._id;
@@ -83,8 +94,14 @@ export default function CreateBotPage() {
         error instanceof Error ? error.message : "Không thể tạo chatbot";
 
       // Update loading toast to error
-      updateToast(loadingToastId, `✗ Không thể tạo chatbot: ${errorMessage}`, "error");
+      updateToast(
+        loadingToastId,
+        `✗ Không thể tạo chatbot: ${errorMessage}`,
+        "error"
+      );
       console.error("Error creating bot:", error);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -120,6 +137,7 @@ export default function CreateBotPage() {
                 formData={formData}
                 onSubmit={handleSubmit}
                 onBack={handleBack}
+                isSubmitting={isSubmitting}
               />
             )}
           </div>

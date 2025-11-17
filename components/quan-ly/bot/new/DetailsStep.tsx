@@ -8,6 +8,7 @@ interface DetailsStepProps {
   formData: CreateBotFormData;
   onSubmit: (data: CreateBotFormData) => void;
   onBack: () => void;
+  isSubmitting: boolean;
 }
 
 interface FormErrors {
@@ -20,10 +21,10 @@ export function DetailsStep({
   formData,
   onSubmit,
   onBack,
+  isSubmitting,
 }: DetailsStepProps) {
   const [localFormData, setLocalFormData] = useState(formData);
   const [errors, setErrors] = useState<FormErrors>({});
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const validateForm = (): boolean => {
     const newErrors: FormErrors = {};
@@ -42,15 +43,11 @@ export function DetailsStep({
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    if (isSubmitting) return;
     if (validateForm()) {
-      setIsSubmitting(true);
-      try {
-        onSubmit(localFormData);
-      } finally {
-        setIsSubmitting(false);
-      }
+      onSubmit(localFormData);
     }
   };
 
