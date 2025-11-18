@@ -2,34 +2,23 @@
 
 import dynamic from "next/dynamic";
 
-const Header = dynamic(() => import("@/components/layout/Header").then(mod => ({ default: mod.Header })), {
-  ssr: false,
-});
+const Header = dynamic(() => import("@/components/homepage/Header"), { ssr: false });
+const Hero = dynamic(() => import("@/components/homepage/HeroSection"), { ssr: false });
+const Features = dynamic(() => import("@/components/homepage/FeaturesGrid"), { ssr: false });
+const HowItWorks = dynamic(() => import("@/components/homepage/HowItWorks"), { ssr: false });
+const PricingCTA = dynamic(() => import("@/components/homepage/PricingCTA"), { ssr: false });
+const Footer = dynamic(() => import("@/components/homepage/Footer"), { ssr: false });
 
-const Hero = dynamic(() => import("@/components/homepage/Hero").then(mod => ({ default: mod.Hero })), {
-  ssr: false,
-});
-
-const Features = dynamic(() => import("@/components/homepage/Features").then(mod => ({ default: mod.Features })), {
-  ssr: false,
-});
-
-const Pricing = dynamic(() => import("@/components/homepage/Pricing").then(mod => ({ default: mod.Pricing })), {
-  ssr: false,
-});
-
-const Footer = dynamic(() => import("@/components/layout/Footer").then(mod => ({ default: mod.Footer })), {
-  ssr: false,
-});
-
-export default function Home() {
+export default function Page() {
   return (
-    <main className="min-h-screen bg-black text-white font-cakelan">
+    <main className="font-cakelan bg-white text-slate-900">
       <Header />
       <Hero />
       <Features />
-      <Pricing />
+      <HowItWorks />
+      <PricingCTA />
       <Footer />
     </main>
   );
 }
+

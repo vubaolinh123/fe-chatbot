@@ -3,7 +3,8 @@ export const translations = {
     header: {
       home: "Trang chủ",
       features: "Tính năng",
-      pricing: "Giá",
+      guide: "Hướng Dẫn",
+      pricing: "Mua Gói",
       contact: "Liên hệ",
       language: "Ngôn ngữ",
     },
@@ -14,14 +15,17 @@ export const translations = {
       features: "Xem tính năng",
     },
     features: {
+      title: "Tính năng",
+      titleHighlight: "mạnh mẽ",
+      subtitle: "Tất cả những gì bạn cần để xây dựng một chatbot AI thông minh",
       dataIntegration: {
         title: "TÍCH HỢP DỮ LIỆU",
-        description: "Kết nối tài liệu Docs, PDF, Google Sheet, CSV (tối đa 50MB/người dùng). AI tự động xử lý – phân đoạn văn bản, tạo embedding và xây dựng hệ thống RAG để trả lời chính xác theo dữ liệu riêng của bạn",
+        description: "Kết nối Docs, PDF, Google Sheet, CSV. AI tự động xử lý, tạo embedding và xây dựng hệ thống RAG",
         features: [
-          "Hỗ trợ nhiều định dạng: PDF, DOCX, Sheet, CSV",
+          "Hỗ trợ nhiều định dạng: PDF, DOCX, CSV",
           "Tự động chunking & embedding",
-          "Truy vấn thông tin chuẩn xác bằng RAG + vector DB",
-          "Huấn luyện trong vài giây, độ chính xác cao",
+          "Truy vấn thông tin chuẩn xác bằng RAG",
+          "Huấn luyện Chatbot với độ chính xác cao",
         ],
       },
       autoResponse: {
@@ -107,6 +111,7 @@ export const translations = {
     header: {
       home: "Home",
       features: "Features",
+      guide: "How It Works",
       pricing: "Pricing",
       contact: "Contact",
       language: "Language",
@@ -118,13 +123,16 @@ export const translations = {
       features: "View Features",
     },
     features: {
+      title: "Powerful",
+      titleHighlight: "Features",
+      subtitle: "Everything you need to build a smart AI chatbot",
       dataIntegration: {
         title: "DATA INTEGRATION",
-        description: "Connect Docs, PDF, Google Sheets, CSV (up to 50MB/user). AI automatically processes - text segmentation, embedding creation and RAG system for accurate answers based on your private data",
+        description: "Connect Docs, PDF, Google Sheets, CSV. AI automatically processes, creates embeddings and builds RAG system",
         features: [
-          "Support multiple formats: PDF, DOCX, Sheet, CSV",
+          "Support multiple formats: PDF, DOCX, CSV",
           "Automatic chunking & embedding",
-          "Accurate information retrieval with RAG + vector DB",
+          "Accurate information retrieval with RAG",
           "Training in seconds, high accuracy",
         ],
       },

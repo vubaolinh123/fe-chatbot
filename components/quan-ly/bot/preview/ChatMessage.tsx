@@ -25,7 +25,7 @@ export function ChatMessage({
     return (
       <div className="flex justify-end">
         <div className="max-w-[90%] rounded-2xl rounded-br-none bg-gradient-to-br from-red-600 to-red-700 px-4 py-2.5 text-white shadow-sm transition-all hover:shadow-md md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
-          <p className="text-sm leading-relaxed">{messageText}</p>
+          <p className="whitespace-pre-wrap text-sm leading-relaxed">{messageText}</p>
         </div>
       </div>
     );
@@ -39,7 +39,7 @@ export function ChatMessage({
         </span>
       </div>
       <div className="max-w-[90%] rounded-2xl rounded-bl-none bg-stone-100 px-4 py-2.5 shadow-sm transition-all hover:shadow-md md:max-w-3xl lg:max-w-4xl xl:max-w-5xl">
-        <p className="text-sm leading-relaxed text-stone-900">{messageText}</p>
+        <p className="whitespace-pre-wrap text-sm leading-relaxed text-stone-900">{messageText}</p>
       </div>
     </div>
   );

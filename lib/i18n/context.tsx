@@ -13,25 +13,23 @@ const I18nContext = createContext<I18nContextType | undefined>(undefined);
 
 export function I18nProvider({ children }: { children: React.ReactNode }) {
   const [language, setLanguageState] = useState<Language>("vi");
-  const [mounted, setMounted] = useState(false);
 
+  // On client, read the persisted language
   useEffect(() => {
-    setMounted(true);
-    const saved = localStorage.getItem("language") as Language | null;
-    if (saved && (saved === "vi" || saved === "en")) {
-      setLanguageState(saved);
-    }
+    try {
+      const saved = (typeof window !== "undefined" && localStorage.getItem("language")) as Language | null;
+      if (saved === "vi" || saved === "en") setLanguageState(saved);
+    } catch {}
   }, []);
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    localStorage.setItem("language", lang);
+    try {
+      if (typeof window !== "undefined") localStorage.setItem("language", lang);
+    } catch {}
   };
 
-  if (!mounted) {
-    return <>{children}</>;
-  }
-
+  // Always provide a default value (vi) even before hydration
   return (
     <I18nContext.Provider value={{ language, setLanguage, t: translations[language] }}>
       {children}
